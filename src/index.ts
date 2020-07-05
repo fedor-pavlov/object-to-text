@@ -184,7 +184,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
                 if (data === null)      return ''
 
                 return Array.isArray(data)
-                    ? data.map((i,n) => mutations.map(f => f(_create(ctx, i, callbacks, ctx.$property, n+1))).join('')).join('')
+                    ? data.map((i,n) => mutations.map(f => f(_create(ctx, i, callbacks, ctx.$property, n))).join('')).join('')
                     : mutations.map(f => f(ctx)).join('')
             }
         })
@@ -272,7 +272,7 @@ class Template {
 
 
 
-export function textBuilder(template: string, callbacks?: CallbacksCollection): TextBuilder {
+export function useTemplate(template: string, callbacks?: CallbacksCollection): TextBuilder {
 
     let exec = Template.compile(template)
     return (data: any) => exec(createContex(data, callbacks))
@@ -280,6 +280,6 @@ export function textBuilder(template: string, callbacks?: CallbacksCollection): 
 
 export function toText(data: any, template: string, callbacks?: CallbacksCollection): string {
 
-    let exec = textBuilder(template, callbacks)
+    let exec = useTemplate(template, callbacks)
     return exec(data)
 }
