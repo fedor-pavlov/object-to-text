@@ -17,7 +17,7 @@ export interface Context {
     $root       : Context;
     $property   : string | undefined;
     $level      : number;
-    $iteration  : number;
+    $index      : number;
     call        : (func: string, params: string | undefined) => string;
     value       : (property: string | undefined) => string;
     create      : (property: string | undefined) => Context;
@@ -57,7 +57,7 @@ const rx_template = XRegExp.tag('xis')`
 
 
 
-const supportedContexVariables = ['$', '$property', '$level', '$iteration'];
+const supportedContexVariables = ['$', '$property', '$level', '$index'];
 
 
 
@@ -130,7 +130,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             value           : parent && property ? parent.$level + (parent.$property !== property ? 1 : 0): 0
         })
 
-        Object.defineProperty(ctx, "$iteration", {
+        Object.defineProperty(ctx, "$index", {
 
             configurable    : false,
             enumerable      : false,
@@ -184,7 +184,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
                 if (data === null)      return ''
 
                 return Array.isArray(data)
-                    ? data.map(i => mutations.map(f => f(_create(ctx, i, callbacks, ctx.$property, ctx.$iteration + 1))).join('')).join('')
+                    ? data.map((i,n) => mutations.map(f => f(_create(ctx, i, callbacks, ctx.$property, n+1))).join('')).join('')
                     : mutations.map(f => f(ctx)).join('')
             }
         })
