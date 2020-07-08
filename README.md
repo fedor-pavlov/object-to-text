@@ -3,25 +3,28 @@ Recursive nested text replacer that converts any data objects into strings using
 
 # Examples
 ## very simple example
-
+```javascript
 const { toText } = requrie('object-to-text')
 
 let data = { someProperty: "world" }
 let text = toText(data, "Hello {someProperty}")
 // text === "Hello World"
-
+```
 
 
 ## simple example
-
+```javascript
 const { toText } = requrie('object-to-text')
 
 let data = { someProperty: "world", cities: ["London", "New York", "Paris", "Moscow", "Tokyo"] }
 let text = toText(data, "Hello {someProperty}!\nHere's some must see cities: {cities:\n - {$}}")
-// text === "Hello World
+
+/* text === "Hello World
 Here's some must see citites:
  - London
  - New York
  - Paris
  - Moscow
  - Tokyo"
+*/
+```
