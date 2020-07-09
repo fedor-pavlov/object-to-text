@@ -18,6 +18,7 @@ export interface Context {
     $property   : string | undefined;
     $level      : number;
     $index      : number;
+    $lenOf      : (property: string) => any;
     call        : (func: string, params: string | undefined) => string;
     value       : (property: string | undefined) => string;
     create      : (property: string | undefined) => Context;
@@ -57,7 +58,7 @@ const rx_template = XRegExp.tag('xis')`
 
 
 
-const supportedContexVariables = ['$', '$property', '$level', '$index', '$length'];
+const supportedContexVariables = ['$', '$property', '$level', '$index'];
 
 
 
@@ -137,11 +138,12 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             get             : () => iteration || 0
         })
 
-        Object.defineProperty(ctx, "$length", {
+        Object.defineProperty(ctx, "$lenOf", {
 
             configurable    : false,
             enumerable      : false,
-            get             : () => Array.isArray(data) ? data.length : "not-an-array"
+            writable        : false,
+            value           : (property: string) => Array.isArray(data[property]) ? data[property].length : "not-an-array"
         })
 
         Object.defineProperty(ctx, "value", {
