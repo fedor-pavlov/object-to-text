@@ -57,7 +57,7 @@ const rx_template = XRegExp.tag('xis')`
 
 
 
-const supportedContexVariables = ['$', '$property', '$level', '$index'];
+const supportedContexVariables = ['$', '$property', '$level', '$index', '$length'];
 
 
 
@@ -135,6 +135,13 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             configurable    : false,
             enumerable      : false,
             get             : () => iteration || 0
+        })
+
+        Object.defineProperty(ctx, "$length", {
+
+            configurable    : false,
+            enumerable      : false,
+            get             : () => Array.isArray(data) ? data.length : "not-an-array"
         })
 
         Object.defineProperty(ctx, "value", {
