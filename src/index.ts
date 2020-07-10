@@ -270,10 +270,18 @@ class Template {
 
     static compile(template: string, new_context?: string): Mutator {
 
-        let mutations: any = XRegExp.matchRecursive(template, '{', '}', 'g', { valueNames: ['echo', null, 'route', null] })
-            mutations = mutations && mutations.map((t: any) => (Template as any)[`${t.name}`](t.value)) || [ () => template ]
+        try {
 
-        return (context: Context) => context.create(new_context).mutate(mutations)
+            let mutations: any = XRegExp.matchRecursive(template, '{', '}', 'g', { valueNames: ['echo', null, 'route', null] })
+                mutations = mutations && mutations.map((t: any) => (Template as any)[`${t.name}`](t.value)) || [ () => template ]
+
+            return (context: Context) => context.create(new_context).mutate(mutations)
+        }
+
+        catch (err) {
+
+            return () => err.toString()
+        }
     }
 }
 
