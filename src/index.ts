@@ -39,7 +39,7 @@ type ReplaceCallback = (context: Context, params?: string) => any;
 
 const rx_property = XRegExp.tag('xi')`
     ^\s*
-        (?<property>    [$a-z\d-_]+)\s*     # context
+        (?<property>    [$a-z\d-_]+)\s*     # property
     $`
 
 const rx_function = XRegExp.tag('xi')`
@@ -51,7 +51,7 @@ const rx_function = XRegExp.tag('xi')`
 const rx_template = XRegExp.tag('xis')`
     ^\s*
         (?<context>    [$a-z\d-_]+)\s*:     # context
-        (?<template>    .*)                 # params
+        (?<template>    .*)                 # template
     $`
 
 
@@ -81,6 +81,11 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
 
             return err;
         }
+    }
+
+    function _find_context(propety: string, ...sources: any): any {
+
+        return sources.reduce((acc: any, i: any) => acc === undefined && supportedContexVariables.includes(propety) ? i[propety] : acc)
     }
 
     function _create(parent: Context | null, data: any, callbacks: CallbacksCollection, property?: string, iteration?: number): Context {
@@ -179,7 +184,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             configurable    : false,
             enumerable      : false,
             writable        : false,
-            value           : (property: string | undefined) => property && _create(ctx, data[property], callbacks, property) || ctx
+            value           : (property: string | undefined) => property && _create(ctx, _find_context(property, data, ctx), callbacks, property) || ctx
         })
 
         Object.defineProperty(ctx, "mutate", {
