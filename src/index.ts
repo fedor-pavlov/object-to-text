@@ -1,5 +1,6 @@
 import XRegExp from "xregexp";
 import systemCallbacks from "./addons";
+import { domainToASCII } from "url";
 
 
 
@@ -16,6 +17,8 @@ export interface Context {
     $parent     : Context;
     $root       : Context;
     $property   : string | undefined;
+    $value      : string | undefined;
+    $keys       : [string] | undefined;
     $level      : number;
     $index      : number;
     $lenOf      : (property: string) => any;
@@ -58,7 +61,7 @@ const rx_template = XRegExp.tag('xis')`
 
 
 
-const supportedContexVariables = ['$', '$property', '$level', '$index'];
+const supportedContexVariables = ['$', '$property', '$level', '$index', '$size', '$keys', '$value'];
 
 
 
@@ -83,14 +86,10 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
         }
     }
 
-    function _find_context(propety: string, ...sources: any): any {
+    function _create(parent: Context | null, data: any, resolve_value: (property: any) => any, callbacks: CallbacksCollection, property?: string, iteration?: number, size?: number): Context {
 
-        return sources.reduce((acc: any, i: any) => acc === undefined && supportedContexVariables.includes(propety) ? i[propety] : acc)
-    }
-
-    function _create(parent: Context | null, data: any, callbacks: CallbacksCollection, property?: string, iteration?: number): Context {
-
-        let ctx = Object.create(null) as Context;
+        const ctx = Object.create(null) as Context;
+        const value_resolver = (p: any) => data instanceof Map ? data.get(p) : data[p]
 
         if (typeof data === 'function') {
 
@@ -128,6 +127,20 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             value           : property
         })
 
+        Object.defineProperty(ctx, "$keys", {
+
+            configurable    : false,
+            enumerable      : true,
+            get             : () => typeof data === 'object' ? (data instanceof Map ? [...data.keys()] : Object.keys(data)) : undefined
+        })
+
+        Object.defineProperty(ctx, "$value", {
+
+            configurable    : false,
+            enumerable      : true,
+            get             : () => resolve_value(data)
+        })
+
         Object.defineProperty(ctx, "$level", {
 
             configurable    : false,
@@ -140,7 +153,14 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
 
             configurable    : false,
             enumerable      : false,
-            get             : () => iteration || 0
+            get             : () => iteration === undefined ? 0 : iteration + 1
+        })
+
+        Object.defineProperty(ctx, "$size", {
+
+            configurable    : false,
+            enumerable      : false,
+            get             : () => size || 0
         })
 
         Object.defineProperty(ctx, "$lenOf", {
@@ -148,7 +168,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             configurable    : false,
             enumerable      : false,
             writable        : false,
-            value           : (property: string) => Array.isArray(data[property]) ? data[property].length : "not-an-array"
+            value           : (property: string) => Array.isArray(data[property]) ? data[property].length : "(not-an-array)"
         })
 
         Object.defineProperty(ctx, "value", {
@@ -184,7 +204,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             configurable    : false,
             enumerable      : false,
             writable        : false,
-            value           : (property: string | undefined) => property && _create(ctx, _find_context(property, data, ctx), callbacks, property) || ctx
+            value           : (property: string | undefined) => property && _create(ctx, supportedContexVariables.includes(property) ? (ctx as any)[property] : data[property], value_resolver, callbacks, property) || ctx
         })
 
         Object.defineProperty(ctx, "mutate", {
@@ -198,7 +218,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
                 if (data === null)      return ''
 
                 return Array.isArray(data)
-                    ? data.map((i,n) => mutations.map(f => f(_create(ctx, i, callbacks, ctx.$property, n))).join('')).join('')
+                    ? data.map((i,n) => mutations.map(f => f(_create(ctx, i, resolve_value, callbacks, ctx.$property, n, data.length))).join('')).join('')
                     : mutations.map(f => f(ctx)).join('')
             }
         })
@@ -206,7 +226,13 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
         return ctx;
     }
 
-    return _create(null, data, callbacks && Object.assign(Object.create(null), systemCallbacks, callbacks) || systemCallbacks);
+    return _create(
+
+        null,
+        data,
+        (p: any) => data instanceof Map ? data.get(p) : data[p],
+        callbacks && Object.assign(Object.create(null), systemCallbacks, callbacks) || systemCallbacks
+    )
 }
 
 
