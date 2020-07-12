@@ -1,0 +1,37 @@
+{
+  "name": "object-to-text",
+  "version": "1.6.0",
+  "description": "Recursive Nested Replacer & templater",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "",
+    "build": "tsc",
+    "prepare": "tsc"
+  },
+  "keywords": [
+    "recursive",
+    "nested",
+    "replace",
+    "regex",
+    "templater"
+  ],
+  "author": "Fedor Pavlov",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^14.0.22",
+    "@types/xregexp": "^4.3.0",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "xregexp": "^4.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fedor-pavlov/object-to-text.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fedor-pavlov/object-to-text/issues"
+  },
+  "homepage": "https://github.com/fedor-pavlov/object-to-text#readme"
+}

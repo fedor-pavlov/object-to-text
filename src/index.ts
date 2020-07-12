@@ -86,7 +86,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
         }
     }
 
-    function _create(parent: Context | null, data: any, resolve_value: (property: any) => any, callbacks: CallbacksCollection, property?: string, iteration?: number, size?: number): Context {
+    function _create(parent: Context | null, data: any, resolve_value: (property: any) => any, callbacks: CallbacksCollection, property?: string, iteration?: number | string, size?: number): Context {
 
         const ctx = Object.create(null) as Context;
         const value_resolver = (p: any) => data instanceof Map ? data.get(p) : data[p]
@@ -153,7 +153,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
 
             configurable    : false,
             enumerable      : false,
-            get             : () => iteration === undefined ? 0 : iteration + 1
+            get             : () => iteration === undefined ? 0 : (typeof iteration === 'string' ? iteration : iteration + 1)
         })
 
         Object.defineProperty(ctx, "$size", {
@@ -217,9 +217,23 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
                 if (data === undefined) return ''
                 if (data === null)      return ''
 
-                return Array.isArray(data)
-                    ? data.map((i,n) => mutations.map(f => f(_create(ctx, i, resolve_value, callbacks, ctx.$property, n, data.length))).join('')).join('')
-                    : mutations.map(f => f(ctx)).join('')
+                if (Array.isArray(data)) {
+
+                    return data.map((i,n) => mutations.map(f => f(_create(ctx, i, resolve_value, callbacks, ctx.$property, n, data.length))).join('')).join('')
+                }
+
+                if (data instanceof Map) {
+
+                    console.log("ITERATING THROUGH MAP");
+                    console.table(data)
+                    let keys = [...data.keys()]
+                    console.log(keys)
+                    keys.forEach(k => console.table(data.get(k)))
+
+                    return keys.map(k => mutations.map(f => f(_create(ctx, data.get(k), resolve_value, callbacks, ctx.$property, k, k.length))).join('')).join('')
+                }
+
+                return mutations.map(f => f(ctx)).join('')
             }
         })
 
@@ -270,7 +284,7 @@ class Template {
 
     static error(text: string): Mutator {
 
-        return () => `{{error: "${text}"}}`
+        return () => `{{error: ${text}}}`
     }
 
     static route(text: string): Mutator {
@@ -296,7 +310,7 @@ class Template {
                 : Template.compile(match.template, match.context)
         }
 
-        return Template.error(text);
+        return Template.error(`Unknown pattern: "${text}"`);
     }
 
     static compile(template: string, new_context?: string): Mutator {
