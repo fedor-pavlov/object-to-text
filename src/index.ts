@@ -153,7 +153,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
 
             configurable    : false,
             enumerable      : false,
-            get             : () => iteration === undefined ? 0 : (typeof iteration === 'string' ? iteration : iteration + 1)
+            get             : () => iteration || 0
         })
 
         Object.defineProperty(ctx, "$size", {
@@ -219,7 +219,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
 
                 if (Array.isArray(data)) {
 
-                    return data.map((i,n) => mutations.map(f => f(_create(ctx, i, resolve_value, callbacks, ctx.$property, n, data.length))).join('')).join('')
+                    return data.map((i,n) => mutations.map(f => f(_create(ctx, i, resolve_value, callbacks, ctx.$property, n + 1, data.length))).join('')).join('')
                 }
 
                 if (data instanceof Map) {
