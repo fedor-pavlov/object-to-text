@@ -1,6 +1,5 @@
 import XRegExp from "xregexp";
 import systemCallbacks from "./addons";
-import { domainToASCII } from "url";
 
 
 
@@ -21,7 +20,9 @@ export interface Context {
     $keys       : [string] | undefined;
     $level      : number;
     $index      : number;
-    $lenOf      : (property: string) => any;
+    $size       : number;
+    sizeOf      : (property?: string) => any;
+    join        : (joinBy?: string) => string;
     call        : (func: string, params: string | undefined) => string;
     value       : (property: string | undefined) => string;
     create      : (property: string | undefined) => Context;
@@ -69,9 +70,9 @@ const supportedContexVariables = ['$', '$property', '$level', '$index', '$size',
 
 function createContex(data: any, callbacks?: CallbacksCollection): Context {
 
-    function _flat(value: any): string {
+    function _flat(value: any, joinBy?: string): string {
 
-        return Array.isArray(value) ? value.join() : value && value.toString()
+        return Array.isArray(value) ? value.join(joinBy) : value && typeof value.toString === 'function' && value.toString() || `${value}`
     }
 
     function _safecall(func: ReplaceCallback, context: Context, params?: string): any {
@@ -163,12 +164,20 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             get             : () => size || 0
         })
 
-        Object.defineProperty(ctx, "$lenOf", {
+        Object.defineProperty(ctx, "sizeOf", {
 
             configurable    : false,
             enumerable      : false,
             writable        : false,
-            value           : (property: string) => Array.isArray(data[property]) ? data[property].length : "(not-an-array)"
+            value           : (property?: string) => property && data && Array.isArray(data[property]) ? data[property].length : ''
+        })
+
+        Object.defineProperty(ctx, "join", {
+
+            configurable    : false,
+            enumerable      : false,
+            writable        : false,
+            value           : (joinBy?: string) => _flat(data, joinBy)
         })
 
         Object.defineProperty(ctx, "value", {
