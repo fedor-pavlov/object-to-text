@@ -1,6 +1,6 @@
 {
   "name": "object-to-text",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Recursive Nested Replacer & templater",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

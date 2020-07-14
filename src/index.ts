@@ -221,7 +221,7 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             configurable    : false,
             enumerable      : false,
             writable        : false,
-            value           : (mutations: MutationStack) => { 
+            value           : (mutations: MutationStack) => {
 
                 if (data === undefined) return ''
                 if (data === null)      return ''
@@ -233,12 +233,8 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
 
                 if (data instanceof Map) {
 
-                    console.log("ITERATING THROUGH MAP");
-                    console.table(data)
                     let keys = [...data.keys()]
-                    console.log(keys)
                     keys.forEach(k => console.table(data.get(k)))
-
                     return keys.map(k => mutations.map(f => f(_create(ctx, data.get(k), resolve_value, callbacks, ctx.$property, k, k.length))).join('')).join('')
                 }
 
