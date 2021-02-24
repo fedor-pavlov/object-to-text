@@ -21,6 +21,7 @@ export interface Context {
     $level      : number;
     $index      : number;
     $size       : number;
+    $if         : boolean;
     sizeOf      : (property?: string) => any;
     join        : (joinBy?: string) => string;
     call        : (func: string, params: string | undefined) => string;
@@ -162,6 +163,13 @@ function createContex(data: any, callbacks?: CallbacksCollection): Context {
             configurable    : false,
             enumerable      : false,
             get             : () => size || 0
+        })
+
+        Object.defineProperty(ctx, "$if", {
+
+            configurable    : false,
+            enumerable      : false,
+            get             : () => !!data
         })
 
         Object.defineProperty(ctx, "sizeOf", {
